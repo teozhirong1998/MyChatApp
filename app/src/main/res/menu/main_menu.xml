@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/mainAccountSettingsBtn"
+        android:title="Account Settings" />
+    <item
+        android:id="@+id/mainAllUsersBtn"
+        android:title="All Users" />
+    <item
+        android:id="@+id/mainLogoutBtn"
+        android:title="@string/sign_out" />
+</menu>
