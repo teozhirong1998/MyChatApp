@@ -2,7 +2,7 @@ package com.example.a16022635.mychatapp;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.media.Image;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -26,12 +26,13 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
-import com.theartofdev.edmodo.cropper.CropImageView;
 
-import java.util.Random;
-import java.util.Set;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import id.zelory.compressor.Compressor;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -129,6 +130,7 @@ public class SettingsActivity extends AppCompatActivity {
 
             CropImage.activity(imageUri)
                     .setAspectRatio(1,1)
+                    .setMinCropResultSize(500,500)
                     .start(this);
 
         }
@@ -148,14 +150,28 @@ public class SettingsActivity extends AppCompatActivity {
 
                 Uri resultUri = result.getUri();
                 String current_userID = mCurrentUser.getUid();
-                StorageReference filepath = mImageStorage.child("profile_images").child( current_userID + ".jpg");
+                File thumb_filePath = new File(resultUri.getPath());
 
+                Bitmap thumb_bitmap = new Compressor(this)
+                        .setMaxWidth(200)
+                        .setMaxHeight(200)
+                        .setQuality(75)
+                        .compressToBitmap(thumb_filePath);
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                thumb_bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                byte[] thumb_byte = baos.toByteArray();
+
+                StorageReference filepath = mImageStorage.child("profile_images").child( current_userID + ".jpg");
+                StorageReference thumb_filepath = mImageStorage.child("profile_images").child("profile_thumbs").child(current_userID + ".jpq");
 
                 filepath.putFile(resultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
                         if(task.isSuccessful()){
                             String downloadUrl = task.getResult().getDownloadUrl().toString();
+                            UploadTask uploadTask = thumb_filePath.putBytes(thumb_byte);
+
                             mUsersDatabase.child("image").setValue(downloadUrl).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
@@ -182,6 +198,7 @@ public class SettingsActivity extends AppCompatActivity {
             }
         }
     }
+}
 
 //    public static String random() {
 //        Random generator = new Random();
@@ -195,4 +212,4 @@ public class SettingsActivity extends AppCompatActivity {
 //
 //        return randomStringBuilder.toString();
 //    }
-}
+
