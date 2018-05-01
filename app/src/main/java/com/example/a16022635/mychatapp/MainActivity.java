@@ -60,9 +60,18 @@ public class MainActivity extends AppCompatActivity {
             sendToStart();
         } else if (item.getItemId() == R.id.mainAccountSettingsBtn){
             sendToSettings();
+        } else if (item.getItemId() == R.id.mainAllUsersBtn) {
+            sendToAllUsers();
         }
 
+
         return true;
+    }
+
+    private void sendToAllUsers() {
+        Intent allUsersIntent = new Intent(MainActivity.this, AllUsersActivity.class);
+        startActivity(allUsersIntent);
+
     }
 
     private void sendToStart() {
@@ -74,6 +83,6 @@ public class MainActivity extends AppCompatActivity {
     private void sendToSettings() {
         Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
         startActivity(settingsIntent);
-        finish();
+
     }
 }
