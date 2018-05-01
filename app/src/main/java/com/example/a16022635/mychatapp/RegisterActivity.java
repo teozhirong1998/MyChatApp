@@ -17,10 +17,17 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
 
 public class RegisterActivity extends AppCompatActivity {
     //Firebase Auth
     private FirebaseAuth mAuth;
+
+    private DatabaseReference mDatabase;
 
     private TextInputLayout etDisplayName;
     private TextInputLayout etEmail;
@@ -69,16 +76,38 @@ public class RegisterActivity extends AppCompatActivity {
 
     }
 
-    private void registerUser(String newUserDisplayName, String newUserEmail, String newUserPassword) {
+    private void registerUser(final String newUserDisplayName, String newUserEmail, String newUserPassword) {
         mAuth.createUserWithEmailAndPassword(newUserEmail, newUserPassword).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
-                    mProgressDialog.dismiss();
 
-                    Intent mainIntent = new Intent(RegisterActivity.this, MainActivity.class);
-                    startActivity(mainIntent);
-                    finish();
+                    FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+                    String userID = currentUser.getUid();
+                    mDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(userID);
+
+                    HashMap<String, String> userMap = new HashMap<>();
+                    userMap.put("name", newUserDisplayName);
+                    userMap.put("bio", "Hey there! I'm using MyChatApp!");
+                    userMap.put("image", "default");
+                    userMap.put("thumb_image", "default");
+
+                    //Checking if it adds into the Database
+                    mDatabase.setValue(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if(task.isSuccessful()){
+                                mProgressDialog.dismiss();
+                                Intent mainIntent = new Intent(RegisterActivity.this, MainActivity.class);
+                                mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(mainIntent);
+                                finish();
+                            }
+                        }
+                    });
+
+
+
                 } else {
                     mProgressDialog.hide();
                     Toast.makeText(RegisterActivity.this, "Unable to create account", Toast.LENGTH_LONG).show();

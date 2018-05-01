@@ -35,7 +35,7 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="221dp"
-        android:text="Hey there! I'm using MyChatApp!"
+        android:text="@string/default_bio"
         android:textColor="@android:color/white" />
 
     <Button
